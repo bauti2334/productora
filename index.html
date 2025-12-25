@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURP+ | Streaming de PURP Productora</title>
+    <style>
+        /* ========================================
+        SISTEMA DE DISEÑO - PURP PRODUCTORA
+        ========================================
+        */
+        :root {
+            --primary: #8a2be2;
+            --primary-light: #a855f7;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-main: #ffffff;
+            --text-dim: #b3b3b3;
+            --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Ocultar scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ========================================
+        INTRO CINEMATOGRÁFICA 
+        ========================================
+        */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .skip-intro {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid white;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .skip-intro:hover { background: white; color: black; }
+
+        /* ========================================
+        UI PRINCIPAL 
+        ========================================
+        */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+            transition: var(--transition);
+        }
+
+        header.scrolled { background: var(--bg-dark); padding: 15px 5%; }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -1px;
+        }
+
+        .logo span { color: white; }
+
+        /* Hero / Carousel */
+        .hero {
+            height: 85vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            overflow: hidden;
+        }
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1s ease;
+            display: none;
+        }
+
+        .hero-slide.active { display: block; }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .hero-content h1 { font-size: 4rem; margin-bottom: 1rem; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+
+        .btn-play {
+            padding: 12px 35px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .btn-play:hover { transform: scale(1.05); background: var(--primary-light); }
+
+        /* Contenedores de Series y Películas */
+        .content-row { padding: 40px 5%; }
+
+        .row-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3);
+        }
+
+        .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+
+        .card-info { padding: 15px; }
+
+        .card-category { color: var(--primary); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+
+        /* ========================================
+        MODAL REPRODUCTOR & TEMPORADAS
+        ========================================
+        */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            padding: 50px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 30px; color: white; cursor: pointer;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            aspect-ratio: 16/9;
+        }
+
+        .video-container iframe { width: 100%; height: 100%; border: none; }
+
+        .series-manager {
+            max-width: 1000px;
+            margin: 30px auto;
+            width: 100%;
+        }
+
+        .season-selector {
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid var(--primary);
+        }
+
+        .episodes-list {
+            display: grid;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .episode-item {
+            padding: 15px;
+            background: #222;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .episode-item:hover { background: var(--primary); }
+
+        /* ========================================
+        ASISTENTE PURP 
+        ========================================
+        */
+        #chat-trigger {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.5);
+            z-index: 1500;
+        }
+
+        #chat-window {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            width: 300px;
+            background: var(--bg-card);
+            border-radius: 15px;
+            border: 1px solid var(--primary);
+            display: none;
+            flex-direction: column;
+            z-index: 1500;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .chat-header { background: var(--primary); padding: 15px; font-weight: bold; }
+        .chat-body { padding: 15px; font-size: 0.9rem; line-height: 1.5; }
+        .chat-option {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background: #333;
+            border: none;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 4px;
+        }
+        .chat-option:hover { background: var(--primary); }
+
+        footer {
+            padding: 50px 5%;
+            text-align: center;
+            border-top: 1px solid #222;
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.5rem; }
+            .modal { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <video id="intro-video" autoplay muted>
+            <source src="intro.mp4" type="video/mp4">
+        </video>
+        <button class="skip-intro" onclick="finishIntro()">Saltar Intro</button>
+    </div>
+
+    <header id="main-header">
+        <a href="#" class="logo">PURP<span>+</span></a>
+    </header>
+
+    <section class="hero" id="hero-slider">
+        </section>
+
+    <main>
+        <section class="content-row">
+            <h2 class="row-title">Originales de PURP Productora</h2>
+            <div class="grid" id="grid-originales"></div>
+        </section>
+
+        <section class="content-row">
+            <h2 class="row-title">Series Destacadas</h2>
+            <div class="grid" id="grid-series"></div>
+        </section>
+
+        <section class="content-row">
+            <h2 class="row-title">Películas</h2>
+            <div class="grid" id="grid-peliculas"></div>
+        </section>
+    </main>
+
+    <div class="modal" id="player-modal">
+        <span class="close-modal" onclick="closePlayer()">&times;</span>
+        
+        <div class="video-container" id="video-frame-container">
+            </div>
+
+        <div class="series-manager" id="series-controls" style="display:none;">
+            <select class="season-selector" id="season-select" onchange="updateEpisodesList()">
+                </select>
+            <div class="episodes-list" id="episodes-container">
+                </div>
+        </div>
+    </div>
+
+    <div id="chat-trigger" onclick="toggleChat()">💜</div>
+    <div id="chat-window">
+        <div class="chat-header">Asistente PURP+</div>
+        <div class="chat-body" id="chat-content">
+            ¡Hola! Bienvenido a la plataforma oficial de PURP Productora. ¿En qué puedo ayudarte?
+            <button class="chat-option" onclick="chatReply('info')">¿Qué es PURP?</button>
+            <button class="chat-option" onclick="chatReply('nav')">¿Cómo navego?</button>
+            <button class="chat-option" onclick="chatReply('ver')">¿Cómo ver contenido?</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 PURP Productora. Todos los derechos reservados.</p>
+        <p style="font-size: 0.8rem; margin-top: 10px;">Calidad cinematográfica en cada frame.</p>
+    </footer>
+
+    <script>
+        /* ========================================
+        BASE DE DATOS INTERNA (VIDEOS)
+        ========================================
+        Instrucciones:
+        - URL YouTube: usa el formato 'https://www.youtube.com/embed/ID_DEL_VIDEO'
+        - URL TikTok: usa la URL del video de TikTok (el sistema intentará embeberlo)
+        */
+        const VIDEOS = [
+            {
+                titulo: "El Origen de PURP",
+                descripcion: "Un documental exclusivo sobre el nacimiento de la productora.",
+                categoria: "Originales",
+                temporada: 1,
+                episodio: 1,
+                tipo: "youtube",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Ejemplo
+                thumb: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                titulo: "PURP Sessions: Vol 1",
+                descripcion: "Serie musical con artistas locales.",
+                categoria: "Series",
+                temporada: 1,
+                episodio: 1,
+                tipo: "youtube",
+                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+                thumb: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                titulo: "PURP Sessions: Vol 1",
+                descripcion: "Episodio 2 de la primera temporada.",
+                categoria: "Series",
+                temporada: 1,
+                episodio: 2,
+                tipo: "youtube",
+                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+                thumb: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                titulo: "Noche en la Ciudad",
+                descripcion: "Cortometraje cinemático producido por PURP.",
+                categoria: "Películas",
+                temporada: 0,
+                episodio: 0,
+                tipo: "youtube",
+                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+                thumb: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80"
+            }
+        ];
+
+        // 1. MANEJO DE INTRO
+        const introOverlay = document.getElementById('intro-overlay');
+        const introVideo = document.getElementById('intro-video');
+
+        introVideo.onended = function() {
+            finishIntro();
+        };
+
+        function finishIntro() {
+            introOverlay.style.opacity = '0';
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+                initSite();
+            }, 1000);
+        }
+
+        // 2. INICIALIZACIÓN DEL SITIO
+        function initSite() {
+            renderGrid('Originales', 'grid-originales');
+            renderGrid('Series', 'grid-series');
+            renderGrid('Películas', 'grid-peliculas');
+            setupHero();
+        }
+
+        function renderGrid(cat, containerId) {
+            const container = document.getElementById(containerId);
+            const filtered = VIDEOS.filter(v => v.categoria === cat);
+            
+            // Para series, solo mostramos el primer episodio de la temp 1 como portada
+            const displayItems = cat === 'Series' 
+                ? filtered.filter(v => v.episodio === 1 && v.temporada === 1)
+                : filtered;
+
+            displayItems.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${video.thumb}" alt="${video.titulo}">
+                    <div class="card-info">
+                        <div class="card-category">${video.categoria}</div>
+                        <h3 style="margin:5px 0">${video.titulo}</h3>
+                    </div>
+                `;
+                card.onclick = () => openPlayer(video);
+                container.appendChild(card);
+            });
+        }
+
+        // 3. REPRODUCTOR Y TEMPORADAS
+        let currentSeriesTitle = "";
+
+        function openPlayer(video) {
+            const modal = document.getElementById('player-modal');
+            const frameContainer = document.getElementById('video-frame-container');
+            const seriesControls = document.getElementById('series-controls');
+            
+            modal.style.display = 'flex';
+            
+            // Inyectar Video
+            frameContainer.innerHTML = `<iframe src="${video.url}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
+
+            // Lógica de Series
+            if(video.categoria === 'Series') {
+                currentSeriesTitle = video.titulo;
+                seriesControls.style.display = 'block';
+                setupSeasonSelector(video.titulo);
+            } else {
+                seriesControls.style.display = 'none';
+            }
+        }
+
+        function closePlayer() {
+            const modal = document.getElementById('player-modal');
+            const frameContainer = document.getElementById('video-frame-container');
+            modal.style.display = 'none';
+            frameContainer.innerHTML = '';
+        }
+
+        function setupSeasonSelector(titulo) {
+            const selector = document.getElementById('season-select');
+            const episodes = VIDEOS.filter(v => v.titulo === titulo);
+            const seasons = [...new Set(episodes.map(v => v.temporada))].sort();
+            
+            selector.innerHTML = seasons.map(s => `<option value="${s}">Temporada ${s}</option>`).join('');
+            updateEpisodesList();
+        }
+
+        function updateEpisodesList() {
+            const selector = document.getElementById('season-select');
+            const container = document.getElementById('episodes-container');
+            const selectedSeason = parseInt(selector.value);
+            
+            const episodes = VIDEOS.filter(v => v.titulo === currentSeriesTitle && v.temporada === selectedSeason);
+            
+            container.innerHTML = episodes.map(ep => `
+                <div class="episode-item" onclick="playEpisode('${ep.url}')">
+                    <span>Episodio ${ep.episodio}</span>
+                    <span style="color: var(--text-dim)">Reproducir ahora</span>
+                </div>
+            `).join('');
+        }
+
+        function playEpisode(url) {
+            document.getElementById('video-frame-container').innerHTML = 
+                `<iframe src="${url}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
+        }
+
+        // 4. HERO SLIDER
+        function setupHero() {
+            const hero = document.getElementById('hero-slider');
+            const featured = VIDEOS.slice(0, 3);
+            
+            featured.forEach((video, index) => {
+                const slide = document.createElement('div');
+                slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+                slide.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), transparent), url('${video.thumb}')`;
+                slide.innerHTML = `
+                    <div class="hero-content">
+                        <h1>${video.titulo}</h1>
+                        <p style="margin-bottom: 20px">${video.descripcion}</p>
+                        <button class="btn-play" onclick="openPlayer(VIDEOS[${index}])">VER AHORA</button>
+                    </div>
+                `;
+                hero.appendChild(slide);
+            });
+
+            // Rotación automática cada 5s
+            let currentSlide = 0;
+            setInterval(() => {
+                const slides = document.querySelectorAll('.hero-slide');
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 5000);
+        }
+
+        // 5. ASISTENTE
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function chatReply(type) {
+            const content = document.getElementById('chat-content');
+            if(type === 'info') {
+                content.innerHTML = "PURP Productora es una agencia creativa líder en contenido visual cinematográfico.";
+            } else if(type === 'nav') {
+                content.innerHTML = "Puedes navegar haciendo scroll o seleccionando categorías arriba. Haz clic en cualquier póster para ver el video.";
+            } else {
+                content.innerHTML = "No necesitas registro. Todo el contenido es libre para disfrutar.";
+            }
+            setTimeout(() => {
+                content.innerHTML += `<br><br><button class="chat-option" onclick="location.reload()">Reiniciar chat</button>`;
+            }, 1000);
+        }
+
+        // 6. EFECTOS HEADER
+        window.onscroll = function() {
+            const header = document.getElementById('main-header');
+            if (window.pageYOffset > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        };
+
+    </script>
+</body>
+</html>
