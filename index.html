@@ -3,601 +3,1702 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PURP+ | Streaming de PURP Productora</title>
+    <title>PURP+ | Plataforma de Streaming</title>
     <style>
-        /* ========================================
-        SISTEMA DE DISEÑO - PURP PRODUCTORA
-        ========================================
-        */
+        /* =====================================================
+           VARIABLES DE CONFIGURACIÓN
+        ===================================================== */
         :root {
-            --primary: #8a2be2;
-            --primary-light: #a855f7;
+            --purp-primary: #9333ea;
+            --purp-secondary: #c026d3;
+            --purp-accent: #f0abfc;
             --bg-dark: #0a0a0a;
             --bg-card: #1a1a1a;
-            --text-main: #ffffff;
-            --text-dim: #b3b3b3;
-            --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            --bg-overlay: rgba(10, 10, 10, 0.95);
+            --text-light: #ffffff;
+            --text-gray: #a0a0a0;
+            --gradient-purp: linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #f0abfc 100%);
+            --shadow-purp: 0 20px 60px rgba(147, 51, 234, 0.4);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
             overflow-x: hidden;
-            scroll-behavior: smooth;
+            line-height: 1.6;
         }
 
-        /* Ocultar scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        /* ========================================
-        INTRO CINEMATOGRÁFICA 
-        ========================================
-        */
-        #intro-overlay {
+        /* =====================================================
+           INTRO SCREEN
+        ===================================================== */
+        #intro-screen {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 9999;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 10000;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: opacity 1s ease;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #intro-screen.fade-out {
+            animation: fadeOut 1.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
 
         #intro-video {
+            max-width: 100%;
+            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #intro-audio-container {
+            text-align: center;
+        }
+
+        #intro-audio-container .audio-visual {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            background: var(--gradient-purp);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        #intro-audio-container h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: var(--gradient-purp);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #skip-intro {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            padding: 15px 35px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            z-index: 10001;
+        }
+
+        #skip-intro:hover {
+            background: var(--purp-primary);
+            border-color: var(--purp-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-purp);
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(147, 51, 234, 0.2);
+            border-top-color: var(--purp-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 25px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.4s ease;
+        }
+
+        header.scrolled {
+            background: var(--bg-overlay);
+            backdrop-filter: blur(30px);
+            padding: 18px 60px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: var(--gradient-purp);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        nav {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-purp);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--purp-accent);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* =====================================================
+           HERO SECTION
+        ===================================================== */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-slider {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .skip-intro {
+        .hero-overlay {
             position: absolute;
-            bottom: 40px;
-            right: 40px;
-            padding: 12px 24px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid white;
-            color: white;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 12px;
-            transition: var(--transition);
-        }
-
-        .skip-intro:hover { background: white; color: black; }
-
-        /* ========================================
-        UI PRINCIPAL 
-        ========================================
-        */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
-            transition: var(--transition);
-        }
-
-        header.scrolled { background: var(--bg-dark); padding: 15px 5%; }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--primary);
-            text-decoration: none;
-            letter-spacing: -1px;
-        }
-
-        .logo span { color: white; }
-
-        /* Hero / Carousel */
-        .hero {
-            height: 85vh;
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 0 5%;
-            overflow: hidden;
-        }
-
-        .hero-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: opacity 1s ease;
-            display: none;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+            z-index: 1;
         }
-
-        .hero-slide.active { display: block; }
 
         .hero-content {
             position: relative;
             z-index: 2;
-            max-width: 600px;
+            max-width: 650px;
+            padding: 0 60px;
+            animation: fadeInUp 1.2s ease;
         }
 
-        .hero-content h1 { font-size: 4rem; margin-bottom: 1rem; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .btn-play {
-            padding: 12px 35px;
-            background: var(--primary);
-            color: white;
+        .hero-content .brand-tag {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(147, 51, 234, 0.2);
+            border: 2px solid var(--purp-primary);
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--purp-accent);
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-content h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            line-height: 1.1;
+            background: var(--gradient-purp);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            color: var(--text-gray);
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .cta-button {
+            padding: 18px 50px;
+            background: var(--gradient-purp);
             border: none;
-            border-radius: 4px;
-            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: var(--transition);
+            transition: all 0.4s ease;
+            box-shadow: var(--shadow-purp);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .btn-play:hover { transform: scale(1.05); background: var(--primary-light); }
-
-        /* Contenedores de Series y Películas */
-        .content-row { padding: 40px 5%; }
-
-        .row-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--text-dim);
-            font-weight: 500;
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 25px 70px rgba(147, 51, 234, 0.6);
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: var(--transition);
+        /* =====================================================
+           CONTENT SECTIONS
+        ===================================================== */
+        .content-section {
+            padding: 80px 60px;
             position: relative;
         }
 
-        .card:hover {
-            transform: scale(1.05) translateY(-10px);
-            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.3);
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
         }
 
-        .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            position: relative;
+            display: inline-block;
+        }
 
-        .card-info { padding: 15px; }
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 60px;
+            height: 4px;
+            background: var(--gradient-purp);
+            border-radius: 2px;
+        }
 
-        .card-category { color: var(--primary); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        /* =====================================================
+           CAROUSEL
+        ===================================================== */
+        .carousel {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 30px 0;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--purp-primary) var(--bg-card);
+        }
 
-        /* ========================================
-        MODAL REPRODUCTOR & TEMPORADAS
-        ========================================
-        */
-        .modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 2000;
-            display: none;
+        .carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .carousel::-webkit-scrollbar-track {
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+
+        .carousel::-webkit-scrollbar-thumb {
+            background: var(--gradient-purp);
+            border-radius: 10px;
+        }
+
+        /* =====================================================
+           CARDS
+        ===================================================== */
+        .card {
+            min-width: 320px;
+            height: 450px;
+            background: var(--bg-card);
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: scale(1.06) translateY(-10px);
+            box-shadow: var(--shadow-purp);
+            z-index: 10;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 70%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-image img {
+            transform: scale(1.1);
+        }
+
+        .card-category {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 6px 18px;
+            background: var(--gradient-purp);
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+        }
+
+        .card-info {
+            padding: 25px;
+            height: 30%;
+            display: flex;
             flex-direction: column;
-            padding: 50px;
+            justify-content: center;
+        }
+
+        .card-info h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-info p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* =====================================================
+           SERIES CARD (CON TEMPORADAS)
+        ===================================================== */
+        .series-card {
+            min-width: 320px;
+            background: var(--bg-card);
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .series-card:hover {
+            transform: scale(1.06) translateY(-10px);
+            box-shadow: var(--shadow-purp);
+        }
+
+        .series-image {
+            width: 100%;
+            height: 380px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .series-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .series-card:hover .series-image img {
+            transform: scale(1.1);
+        }
+
+        .series-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 8px 20px;
+            background: var(--gradient-purp);
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .series-info {
+            padding: 25px;
+        }
+
+        .series-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .series-meta {
+            display: flex;
+            gap: 15px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .series-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .series-info p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* =====================================================
+           MODAL (TEMPORADAS Y EPISODIOS)
+        ===================================================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .modal.active {
+            display: block;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            animation: modalSlideUp 0.4s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .close-modal {
             position: absolute;
-            top: 20px; right: 20px;
-            font-size: 30px; color: white; cursor: pointer;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .video-container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            aspect-ratio: 16/9;
+        .close-modal:hover {
+            background: var(--purp-primary);
+            border-color: var(--purp-primary);
+            transform: rotate(90deg);
         }
 
-        .video-container iframe { width: 100%; height: 100%; border: none; }
+        .series-detail-header {
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
 
-        .series-manager {
-            max-width: 1000px;
-            margin: 30px auto;
+        .series-detail-header img {
             width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .series-detail-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 100%);
+        }
+
+        .series-detail-overlay h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .series-detail-overlay p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            max-width: 700px;
+        }
+
+        .series-detail-body {
+            padding: 40px;
         }
 
         .season-selector {
-            background: #333;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border: 1px solid var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .season-selector label {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--purp-accent);
+        }
+
+        .season-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .season-btn {
+            padding: 12px 30px;
+            background: var(--bg-dark);
+            border: 2px solid var(--purp-primary);
+            color: var(--text-light);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .season-btn:hover {
+            background: var(--purp-primary);
+            transform: translateY(-2px);
+        }
+
+        .season-btn.active {
+            background: var(--gradient-purp);
+            border-color: var(--purp-accent);
         }
 
         .episodes-list {
             display: grid;
-            gap: 10px;
-            max-height: 200px;
-            overflow-y: auto;
+            gap: 20px;
         }
 
         .episode-item {
-            padding: 15px;
-            background: #222;
-            border-radius: 5px;
             display: flex;
-            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+            background: var(--bg-dark);
+            border-radius: 15px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
-        .episode-item:hover { background: var(--primary); }
+        .episode-item:hover {
+            border-color: var(--purp-primary);
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
 
-        /* ========================================
-        ASISTENTE PURP 
-        ========================================
-        */
-        #chat-trigger {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
+        .episode-number {
             width: 60px;
             height: 60px;
-            background: var(--primary);
-            border-radius: 50%;
+            background: var(--gradient-purp);
+            border-radius: 12px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.5);
-            z-index: 1500;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            flex-shrink: 0;
         }
 
-        #chat-window {
+        .episode-info {
+            flex: 1;
+        }
+
+        .episode-info h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .episode-info p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        /* =====================================================
+           VIDEO PLAYER MODAL
+        ===================================================== */
+        .player-modal {
+            display: none;
             position: fixed;
-            bottom: 100px;
-            left: 30px;
-            width: 300px;
-            background: var(--bg-card);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .player-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .player-content {
+            position: relative;
+            width: 90%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            background: #000;
             border-radius: 15px;
-            border: 1px solid var(--primary);
+            overflow: hidden;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8);
+            animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .player-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .close-player {
+            position: absolute;
+            top: -60px;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-player:hover {
+            background: var(--purp-primary);
+            border-color: var(--purp-primary);
+            transform: rotate(90deg);
+        }
+
+        /* =====================================================
+           CHAT ASSISTANT
+        ===================================================== */
+        .chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: var(--gradient-purp);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: var(--shadow-purp);
+            z-index: 999;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-button:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 380px;
+            max-height: 550px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
             display: none;
             flex-direction: column;
-            z-index: 1500;
+            z-index: 999;
             overflow: hidden;
-            animation: slideUp 0.3s ease;
+            border: 2px solid var(--purp-primary);
         }
 
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .chat-window.active {
+            display: flex;
+            animation: slideUpChat 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        .chat-header { background: var(--primary); padding: 15px; font-weight: bold; }
-        .chat-body { padding: 15px; font-size: 0.9rem; line-height: 1.5; }
-        .chat-option {
-            display: block;
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            background: #333;
-            border: none;
+        @keyframes slideUpChat {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-header {
+            padding: 25px;
+            background: var(--gradient-purp);
             color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            max-height: 350px;
+        }
+
+        .chat-message {
+            padding: 15px 20px;
+            border-radius: 18px;
+            max-width: 85%;
+            animation: messageSlide 0.3s ease;
+            line-height: 1.6;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.bot {
+            background: var(--purp-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-message.user {
+            background: var(--bg-dark);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-options {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 2px solid var(--bg-dark);
+        }
+
+        .chat-option {
+            padding: 14px 20px;
+            background: var(--bg-dark);
+            border: 2px solid var(--purp-primary);
+            border-radius: 30px;
             cursor: pointer;
-            text-align: left;
-            border-radius: 4px;
-        }
-        .chat-option:hover { background: var(--primary); }
-
-        footer {
-            padding: 50px 5%;
             text-align: center;
-            border-top: 1px solid #222;
-            color: var(--text-dim);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
 
-        /* Responsive */
+        .chat-option:hover {
+            background: var(--purp-primary);
+            transform: translateX(8px);
+        }
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+        footer {
+            padding: 60px;
+            background: var(--bg-card);
+            text-align: center;
+            border-top: 2px solid var(--purp-primary);
+        }
+
+        .footer-logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: var(--gradient-purp);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .footer-text {
+            color: var(--text-gray);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .footer-brand {
+            color: var(--purp-accent);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
         @media (max-width: 768px) {
-            .hero-content h1 { font-size: 2.5rem; }
-            .modal { padding: 20px; }
+            header {
+                padding: 20px 25px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            nav {
+                gap: 20px;
+                font-size: 14px;
+            }
+
+            .hero-content {
+                padding: 0 25px;
+            }
+
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+
+            .content-section {
+                padding: 50px 25px;
+            }
+
+            .card,
+            .series-card {
+                min-width: 280px;
+            }
+
+            .chat-window {
+                width: calc(100% - 40px);
+                right: 20px;
+            }
+
+            .series-detail-overlay h2 {
+                font-size: 2rem;
+            }
+
+            #skip-intro {
+                bottom: 25px;
+                right: 25px;
+                padding: 12px 25px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="intro-overlay">
-        <video id="intro-video" autoplay muted>
+    <!-- =====================================================
+         INTRO SCREEN
+    ===================================================== -->
+    <div id="intro-screen">
+        <div id="intro-loader" class="loader"></div>
+        
+        <!-- VIDEO INTRO (Opción 1 - Recomendada) -->
+        <video id="intro-video" muted preload="auto">
+            <!-- REEMPLAZA 'intro.mp4' CON EL NOMBRE DE TU VIDEO -->
+            <!-- El video DEBE estar en la misma carpeta que index.html -->
+            <!-- IMPORTANTE: muted es necesario para autoplay -->
             <source src="intro.mp4" type="video/mp4">
         </video>
-        <button class="skip-intro" onclick="finishIntro()">Saltar Intro</button>
+        
+        <!-- AUDIO INTRO (Opción 2) -->
+        <div id="intro-audio-container" style="display:none;">
+            <div class="audio-visual"></div>
+            <h2>PURP Productora</h2>
+            <audio id="intro-audio">
+                <!-- REEMPLAZA 'intro.mp3' CON EL NOMBRE DE TU AUDIO -->
+                <source src="intro.mp3" type="audio/mpeg">
+            </audio>
+            <button id="play-audio" style="padding:15px 40px;background:var(--gradient-purp);border:none;color:white;font-size:16px;font-weight:700;border-radius:50px;cursor:pointer;margin-top:30px;">▶ Reproducir Intro</button>
+        </div>
+        
+        <button id="skip-intro">Saltar Intro ⏭</button>
     </div>
 
-    <header id="main-header">
-        <a href="#" class="logo">PURP<span>+</span></a>
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header id="header">
+        <div class="logo" onclick="scrollToTop()">PURP+</div>
+        <nav>
+            <a href="#inicio">Inicio</a>
+            <a href="#series">Series</a>
+            <a href="#peliculas">Películas</a>
+            <a href="#originales">Originales</a>
+        </nav>
     </header>
 
-    <section class="hero" id="hero-slider">
-        </section>
+    <!-- =====================================================
+         HERO SECTION
+    ===================================================== -->
+    <section class="hero" id="inicio">
+        <div class="hero-slider" id="heroSlider"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="brand-tag">PURP Productora</span>
+            <h1>Tu Streaming Premium</h1>
+            <p>Descubre contenido exclusivo y original. Series, películas y producciones únicas creadas especialmente para ti.</p>
+            <button class="cta-button" onclick="scrollToSeries()">
+                <span>▶</span>
+                Explorar Contenido
+            </button>
+        </div>
+    </section>
 
-    <main>
-        <section class="content-row">
-            <h2 class="row-title">Originales de PURP Productora</h2>
-            <div class="grid" id="grid-originales"></div>
-        </section>
+    <!-- =====================================================
+         SERIES SECTION
+    ===================================================== -->
+    <section class="content-section" id="series">
+        <div class="section-header">
+            <h2 class="section-title">Series</h2>
+        </div>
+        <div class="carousel" id="seriesCarousel"></div>
+    </section>
 
-        <section class="content-row">
-            <h2 class="row-title">Series Destacadas</h2>
-            <div class="grid" id="grid-series"></div>
-        </section>
+    <!-- =====================================================
+         PELÍCULAS SECTION
+    ===================================================== -->
+    <section class="content-section" id="peliculas">
+        <div class="section-header">
+            <h2 class="section-title">Películas</h2>
+        </div>
+        <div class="carousel" id="peliculasCarousel"></div>
+    </section>
 
-        <section class="content-row">
-            <h2 class="row-title">Películas</h2>
-            <div class="grid" id="grid-peliculas"></div>
-        </section>
-    </main>
+    <!-- =====================================================
+         ORIGINALES SECTION
+    ===================================================== -->
+    <section class="content-section" id="originales">
+        <div class="section-header">
+            <h2 class="section-title">Originales PURP+</h2>
+        </div>
+        <div class="carousel" id="originalesCarousel"></div>
+    </section>
 
-    <div class="modal" id="player-modal">
-        <span class="close-modal" onclick="closePlayer()">&times;</span>
-        
-        <div class="video-container" id="video-frame-container">
-            </div>
-
-        <div class="series-manager" id="series-controls" style="display:none;">
-            <select class="season-selector" id="season-select" onchange="updateEpisodesList()">
-                </select>
-            <div class="episodes-list" id="episodes-container">
+    <!-- =====================================================
+         MODAL SERIES (TEMPORADAS Y EPISODIOS)
+    ===================================================== -->
+    <div class="modal" id="seriesModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeSeriesModal()">✕</button>
+            <div class="series-detail-header">
+                <img id="series-detail-image" src="" alt="">
+                <div class="series-detail-overlay">
+                    <h2 id="series-detail-title"></h2>
+                    <p id="series-detail-description"></p>
                 </div>
+            </div>
+            <div class="series-detail-body">
+                <div class="season-selector">
+                    <label>Selecciona una temporada:</label>
+                    <div class="season-buttons" id="seasonButtons"></div>
+                </div>
+                <div class="episodes-list" id="episodesList"></div>
+            </div>
         </div>
     </div>
 
-    <div id="chat-trigger" onclick="toggleChat()">💜</div>
-    <div id="chat-window">
-        <div class="chat-header">Asistente PURP+</div>
-        <div class="chat-body" id="chat-content">
-            ¡Hola! Bienvenido a la plataforma oficial de PURP Productora. ¿En qué puedo ayudarte?
-            <button class="chat-option" onclick="chatReply('info')">¿Qué es PURP?</button>
-            <button class="chat-option" onclick="chatReply('nav')">¿Cómo navego?</button>
-            <button class="chat-option" onclick="chatReply('ver')">¿Cómo ver contenido?</button>
+    <!-- =====================================================
+         VIDEO PLAYER MODAL
+    ===================================================== -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-content">
+            <button class="close-player" onclick="closePlayer()">✕</button>
+            <iframe id="videoPlayer" allowfullscreen></iframe>
         </div>
     </div>
 
+    <!-- =====================================================
+         CHAT ASSISTANT
+    ===================================================== -->
+    <button class="chat-button" onclick="toggleChat()">💬</button>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>🤖</span>
+            Asistente PURP+
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message bot">
+                ¡Hola! Soy tu asistente virtual de PURP+. ¿En qué puedo ayudarte hoy?
+            </div>
+        </div>
+        <div class="chat-options">
+            <div class="chat-option" onclick="askAbout('purp')">¿Qué es PURP Productora?</div>
+            <div class="chat-option" onclick="askAbout('content')">¿Qué contenido tienen?</div>
+            <div class="chat-option" onclick="askAbout('help')">¿Cómo navegar?</div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         FOOTER
+    ===================================================== -->
     <footer>
-        <p>&copy; 2025 PURP Productora. Todos los derechos reservados.</p>
-        <p style="font-size: 0.8rem; margin-top: 10px;">Calidad cinematográfica en cada frame.</p>
+        <div class="footer-logo">PURP+</div>
+        <p class="footer-text">Plataforma de Streaming</p>
+        <p class="footer-brand">© 2025 PURP Productora. Todos los derechos reservados.</p>
     </footer>
 
     <script>
-        /* ========================================
-        BASE DE DATOS INTERNA (VIDEOS)
-        ========================================
-        Instrucciones:
-        - URL YouTube: usa el formato 'https://www.youtube.com/embed/ID_DEL_VIDEO'
-        - URL TikTok: usa la URL del video de TikTok (el sistema intentará embeberlo)
-        */
+        /* =====================================================
+           ██████╗ ██╗      █████╗ ███╗   ██╗██╗██╗     ██╗      █████╗ 
+           ██╔══██╗██║     ██╔══██╗████╗  ██║██║██║     ██║     ██╔══██╗
+           ██████╔╝██║     ███████║██╔██╗ ██║██║██║     ██║     ███████║
+           ██╔═══╝ ██║     ██╔══██║██║╚██╗██║██║██║     ██║     ██╔══██║
+           ██║     ███████╗██║  ██║██║ ╚████║██║███████╗███████╗██║  ██║
+           ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
+           
+           GESTIÓN DE CONTENIDO - EDITA AQUÍ TUS VIDEOS
+        ===================================================== */
+
         const VIDEOS = [
+            // ═══════════════════════════════════════════════
+            // SERIES
+            // ═══════════════════════════════════════════════
             {
-                titulo: "El Origen de PURP",
-                descripcion: "Un documental exclusivo sobre el nacimiento de la productora.",
-                categoria: "Originales",
+                titulo: "Breaking Bad",
+                descripcion: "Un profesor de química se convierte en fabricante de metanfetaminas.",
+                categoria: "series",
                 temporada: 1,
                 episodio: 1,
                 tipo: "youtube",
-                url: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Ejemplo
-                thumb: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80"
+                url: "https://www.youtube.com/watch?v=HhesaQXLuRY",
+                imagen: "https://images.unsplash.com/photo-1574267432644-f86c41866f44?w=600"
             },
             {
-                titulo: "PURP Sessions: Vol 1",
-                descripcion: "Serie musical con artistas locales.",
-                categoria: "Series",
-                temporada: 1,
-                episodio: 1,
-                tipo: "youtube",
-                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
-                thumb: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?auto=format&fit=crop&w=800&q=80"
-            },
-            {
-                titulo: "PURP Sessions: Vol 1",
-                descripcion: "Episodio 2 de la primera temporada.",
-                categoria: "Series",
+                titulo: "Breaking Bad",
+                descripcion: "Un profesor de química se convierte en fabricante de metanfetaminas.",
+                categoria: "series",
                 temporada: 1,
                 episodio: 2,
                 tipo: "youtube",
-                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
-                thumb: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?auto=format&fit=crop&w=800&q=80"
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                imagen: "https://images.unsplash.com/photo-1574267432644-f86c41866f44?w=600"
             },
             {
-                titulo: "Noche en la Ciudad",
-                descripcion: "Cortometraje cinemático producido por PURP.",
-                categoria: "Películas",
-                temporada: 0,
-                episodio: 0,
+                titulo: "Breaking Bad",
+                descripcion: "Un profesor de química se convierte en fabricante de metanfetaminas.",
+                categoria: "series",
+                temporada: 2,
+                episodio: 1,
                 tipo: "youtube",
-                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
-                thumb: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80"
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                imagen: "https://images.unsplash.com/photo-1574267432644-f86c41866f44?w=600"
+            },
+            {
+                titulo: "Stranger Things",
+                descripcion: "Un grupo de niños investiga extraños sucesos sobrenaturales.",
+                categoria: "series",
+                temporada: 1,
+                episodio: 1,
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=b9EkMc79ZSU",
+                imagen: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600"
+            },
+            {
+                titulo: "Stranger Things",
+                descripcion: "Un grupo de niños investiga extraños sucesos sobrenaturales.",
+                categoria: "series",
+                temporada: 1,
+                episodio: 2,
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                imagen: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600"
+            },
+
+            // ═══════════════════════════════════════════════
+            // PELÍCULAS
+            // ═══════════════════════════════════════════════
+            {
+                titulo: "Inception",
+                descripcion: "Un ladrón roba secretos del subconsciente mientras duerme.",
+                categoria: "peliculas",
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=YoHD9XEInc0",
+                imagen: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600"
+            },
+            {
+                titulo: "Interstellar",
+                descripcion: "Un grupo de astronautas viaja a través de un agujero de gusano.",
+                categoria: "peliculas",
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=zSWdZVtXT7E",
+                imagen: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600"
+            },
+            {
+                titulo: "The Matrix",
+                descripcion: "Un hacker descubre la verdad sobre su realidad.",
+                categoria: "peliculas",
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=m8e-FF8MsqU",
+                imagen: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=600"
+            },
+
+            // ═══════════════════════════════════════════════
+            // ORIGINALES PURP+
+            // ═══════════════════════════════════════════════
+            {
+                titulo: "Documental PURP",
+                descripcion: "El detrás de escena de nuestras producciones más importantes.",
+                categoria: "originales",
+                tipo: "youtube",
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                imagen: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600"
+            },
+            {
+                titulo: "Cortometraje Original",
+                descripcion: "Una historia única creada por PURP Productora.",
+                categoria: "originales",
+                tipo: "tiktok",
+                url: "https://www.tiktok.com/@usuario/video/1234567890",
+                imagen: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600"
             }
+
+            // ═══════════════════════════════════════════════
+            // CÓMO AGREGAR MÁS VIDEOS:
+            // ═══════════════════════════════════════════════
+            // 1. Copia todo el bloque entre { }
+            // 2. Pégalo aquí abajo
+            // 3. Completa los campos:
+            //    - titulo: Nombre del video
+            //    - descripcion: Breve descripción
+            //    - categoria: "series", "peliculas" o "originales"
+            //    - temporada: Solo para series (número)
+            //    - episodio: Solo para series (número)
+            //    - tipo: "youtube" o "tiktok"
+            //    - url: Enlace completo del video
+            //    - imagen: URL de la imagen de portada
+            // 4. No olvides la coma al final
+            // ═══════════════════════════════════════════════
         ];
 
-        // 1. MANEJO DE INTRO
-        const introOverlay = document.getElementById('intro-overlay');
-        const introVideo = document.getElementById('intro-video');
+        /* =====================================================
+           CONFIGURACIÓN DE HERO SLIDER
+        ===================================================== */
+        const HERO_IMAGES = [
+            'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920',
+            'https://images.unsplash.com/photo-1574267432644-f86c41866f44?w=1920',
+            'https://images.unsplash.com/photo-1585951237318-9ea5e175b891?w=1920',
+            'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920'
+        ];
 
-        introVideo.onended = function() {
-            finishIntro();
+        /* =====================================================
+           CONFIGURACIÓN DEL ASISTENTE
+        ===================================================== */
+        const CHAT_RESPONSES = {
+            purp: "🎬 PURP Productora es una casa de producción audiovisual dedicada a crear contenido original de alta calidad.\n\nNuestra plataforma PURP+ te permite disfrutar de series, películas y producciones exclusivas en cualquier momento.",
+            
+            content: "📺 En PURP+ encontrarás:\n\n✅ Series originales organizadas por temporadas\n✅ Películas de diversos géneros\n✅ Contenido exclusivo PURP Productora\n✅ Producciones en YouTube y TikTok\n\nTodo completamente gratis.",
+            
+            help: "🧭 Navegación:\n\n• Haz clic en cualquier serie para ver sus temporadas y episodios\n• Las películas se reproducen directamente\n• Usa el scroll horizontal para explorar más contenido\n• Cierra los reproductores con la X o presionando ESC"
         };
 
-        function finishIntro() {
-            introOverlay.style.opacity = '0';
-            setTimeout(() => {
-                introOverlay.style.display = 'none';
-                initSite();
-            }, 1000);
-        }
+        /* =====================================================
+           INTRO MANAGEMENT
+        ===================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            const introScreen = document.getElementById('intro-screen');
+            const introVideo = document.getElementById('intro-video');
+            const introAudio = document.getElementById('intro-audio');
+            const introAudioContainer = document.getElementById('intro-audio-container');
+            const playAudioBtn = document.getElementById('play-audio');
+            const introLoader = document.getElementById('intro-loader');
+            const skipButton = document.getElementById('skip-intro');
 
-        // 2. INICIALIZACIÓN DEL SITIO
-        function initSite() {
-            renderGrid('Originales', 'grid-originales');
-            renderGrid('Series', 'grid-series');
-            renderGrid('Películas', 'grid-peliculas');
-            setupHero();
-        }
+            // Función para finalizar intro
+            const endIntro = () => {
+                introScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    introScreen.style.display = 'none';
+                }, 1500);
+            };
 
-        function renderGrid(cat, containerId) {
-            const container = document.getElementById(containerId);
-            const filtered = VIDEOS.filter(v => v.categoria === cat);
+            // Intentar reproducir video
+            introVideo.play().then(() => {
+                introLoader.style.display = 'none';
+                introVideo.style.display = 'block';
+            }).catch(() => {
+                // Si falla el video, mostrar opción de audio
+                introLoader.style.display = 'none';
+                introVideo.style.display = 'none';
+                introAudioContainer.style.display = 'block';
+                
+                playAudioBtn.addEventListener('click', () => {
+                    introAudio.play();
+                    playAudioBtn.style.display = 'none';
+                });
+
+                introAudio.addEventListener('ended', endIntro);
+            });
+
+            introVideo.addEventListener('ended', endIntro);
+            skipButton.addEventListener('click', endIntro);
+        });
+
+        /* =====================================================
+           HEADER SCROLL EFFECT
+        ===================================================== */
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        /* =====================================================
+           HERO SLIDER
+        ===================================================== */
+        let currentSlide = 0;
+        const heroSlider = document.getElementById('heroSlider');
+
+        HERO_IMAGES.forEach((img, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'hero-slide';
+            if (index === 0) slide.classList.add('active');
+            slide.innerHTML = `<img src="${img}" alt="Hero">`;
+            heroSlider.appendChild(slide);
+        });
+
+        setInterval(() => {
+            const slides = document.querySelectorAll('.hero-slide');
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+
+        /* =====================================================
+           AGRUPAR SERIES POR NOMBRE
+        ===================================================== */
+        function groupSeries() {
+            const seriesMap = {};
             
-            // Para series, solo mostramos el primer episodio de la temp 1 como portada
-            const displayItems = cat === 'Series' 
-                ? filtered.filter(v => v.episodio === 1 && v.temporada === 1)
-                : filtered;
+            VIDEOS.filter(v => v.categoria === 'series').forEach(video => {
+                if (!seriesMap[video.titulo]) {
+                    seriesMap[video.titulo] = {
+                        titulo: video.titulo,
+                        descripcion: video.descripcion,
+                        imagen: video.imagen,
+                        temporadas: {}
+                    };
+                }
+                
+                const temp = video.temporada;
+                if (!seriesMap[video.titulo].temporadas[temp]) {
+                    seriesMap[video.titulo].temporadas[temp] = [];
+                }
+                
+                seriesMap[video.titulo].temporadas[temp].push(video);
+            });
+            
+            // Ordenar episodios
+            Object.values(seriesMap).forEach(serie => {
+                Object.keys(serie.temporadas).forEach(temp => {
+                    serie.temporadas[temp].sort((a, b) => a.episodio - b.episodio);
+                });
+            });
+            
+            return Object.values(seriesMap);
+        }
 
-            displayItems.forEach(video => {
+        /* =====================================================
+           RENDERIZAR CONTENIDO
+        ===================================================== */
+        function renderContent() {
+            // Renderizar Series
+            const series = groupSeries();
+            const seriesCarousel = document.getElementById('seriesCarousel');
+            seriesCarousel.innerHTML = '';
+            
+            series.forEach(serie => {
+                const totalSeasons = Object.keys(serie.temporadas).length;
+                const totalEpisodes = Object.values(serie.temporadas).reduce((sum, eps) => sum + eps.length, 0);
+                
+                const card = document.createElement('div');
+                card.className = 'series-card';
+                card.innerHTML = `
+                    <div class="series-image">
+                        <span class="series-badge">SERIE</span>
+                        <img src="${serie.imagen}" alt="${serie.titulo}">
+                    </div>
+                    <div class="series-info">
+                        <h3>${serie.titulo}</h3>
+                        <div class="series-meta">
+                            <span>📺 ${totalSeasons} Temporada${totalSeasons > 1 ? 's' : ''}</span>
+                            <span>🎬 ${totalEpisodes} Episodio${totalEpisodes > 1 ? 's' : ''}</span>
+                        </div>
+                        <p>${serie.descripcion}</p>
+                    </div>
+                `;
+                card.onclick = () => openSeriesModal(serie);
+                seriesCarousel.appendChild(card);
+            });
+
+            // Renderizar Películas
+            const peliculas = VIDEOS.filter(v => v.categoria === 'peliculas');
+            const peliculasCarousel = document.getElementById('peliculasCarousel');
+            peliculasCarousel.innerHTML = '';
+            
+            peliculas.forEach(pelicula => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <img src="${video.thumb}" alt="${video.titulo}">
+                    <div class="card-image">
+                        <span class="card-category">PELÍCULA</span>
+                        <img src="${pelicula.imagen}" alt="${pelicula.titulo}">
+                    </div>
                     <div class="card-info">
-                        <div class="card-category">${video.categoria}</div>
-                        <h3 style="margin:5px 0">${video.titulo}</h3>
+                        <h3>${pelicula.titulo}</h3>
+                        <p>${pelicula.descripcion}</p>
                     </div>
                 `;
-                card.onclick = () => openPlayer(video);
-                container.appendChild(card);
+                card.onclick = () => playVideo(pelicula.url, pelicula.tipo);
+                peliculasCarousel.appendChild(card);
+            });
+
+            // Renderizar Originales
+            const originales = VIDEOS.filter(v => v.categoria === 'originales');
+            const originalesCarousel = document.getElementById('originalesCarousel');
+            originalesCarousel.innerHTML = '';
+            
+            originales.forEach(original => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-image">
+                        <span class="card-category">ORIGINAL</span>
+                        <img src="${original.imagen}" alt="${original.titulo}">
+                    </div>
+                    <div class="card-info">
+                        <h3>${original.titulo}</h3>
+                        <p>${original.descripcion}</p>
+                    </div>
+                `;
+                card.onclick = () => playVideo(original.url, original.tipo);
+                originalesCarousel.appendChild(card);
             });
         }
 
-        // 3. REPRODUCTOR Y TEMPORADAS
-        let currentSeriesTitle = "";
+        /* =====================================================
+           MODAL DE SERIES (TEMPORADAS Y EPISODIOS)
+        ===================================================== */
+        let currentSerie = null;
+        let currentSeason = 1;
 
-        function openPlayer(video) {
-            const modal = document.getElementById('player-modal');
-            const frameContainer = document.getElementById('video-frame-container');
-            const seriesControls = document.getElementById('series-controls');
+        function openSeriesModal(serie) {
+            currentSerie = serie;
+            currentSeason = 1;
             
-            modal.style.display = 'flex';
+            const modal = document.getElementById('seriesModal');
+            document.getElementById('series-detail-title').textContent = serie.titulo;
+            document.getElementById('series-detail-description').textContent = serie.descripcion;
+            document.getElementById('series-detail-image').src = serie.imagen;
             
-            // Inyectar Video
-            frameContainer.innerHTML = `<iframe src="${video.url}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
+            renderSeasonButtons();
+            renderEpisodes();
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-            // Lógica de Series
-            if(video.categoria === 'Series') {
-                currentSeriesTitle = video.titulo;
-                seriesControls.style.display = 'block';
-                setupSeasonSelector(video.titulo);
-            } else {
-                seriesControls.style.display = 'none';
+        function renderSeasonButtons() {
+            const seasonButtons = document.getElementById('seasonButtons');
+            seasonButtons.innerHTML = '';
+            
+            Object.keys(currentSerie.temporadas).sort((a, b) => a - b).forEach(season => {
+                const btn = document.createElement('button');
+                btn.className = 'season-btn';
+                if (parseInt(season) === currentSeason) btn.classList.add('active');
+                btn.textContent = `Temporada ${season}`;
+                btn.onclick = () => {
+                    currentSeason = parseInt(season);
+                    renderSeasonButtons();
+                    renderEpisodes();
+                };
+                seasonButtons.appendChild(btn);
+            });
+        }
+
+        function renderEpisodes() {
+            const episodesList = document.getElementById('episodesList');
+            episodesList.innerHTML = '';
+            
+            const episodes = currentSerie.temporadas[currentSeason] || [];
+            
+            episodes.forEach(ep => {
+                const item = document.createElement('div');
+                item.className = 'episode-item';
+                item.innerHTML = `
+                    <div class="episode-number">${ep.episodio}</div>
+                    <div class="episode-info">
+                        <h4>Episodio ${ep.episodio}</h4>
+                        <p>${ep.descripcion}</p>
+                    </div>
+                `;
+                item.onclick = () => {
+                    closeSeriesModal();
+                    playVideo(ep.url, ep.tipo);
+                };
+                episodesList.appendChild(item);
+            });
+        }
+
+        function closeSeriesModal() {
+            document.getElementById('seriesModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        /* =====================================================
+           VIDEO PLAYER
+        ===================================================== */
+        function getEmbedUrl(url, tipo) {
+            if (tipo === 'youtube') {
+                const videoId = url.includes('youtu.be') 
+                    ? url.split('youtu.be/')[1]?.split('?')[0]
+                    : url.split('v=')[1]?.split('&')[0];
+                return `https://www.youtube.com/embed/${videoId}`;
             }
+            
+            if (tipo === 'tiktok') {
+                const videoId = url.split('/video/')[1]?.split('?')[0];
+                return `https://www.tiktok.com/embed/v2/${videoId}`;
+            }
+            
+            return url;
+        }
+
+        function playVideo(url, tipo) {
+            const modal = document.getElementById('playerModal');
+            const player = document.getElementById('videoPlayer');
+            
+            player.src = getEmbedUrl(url, tipo);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function closePlayer() {
-            const modal = document.getElementById('player-modal');
-            const frameContainer = document.getElementById('video-frame-container');
-            modal.style.display = 'none';
-            frameContainer.innerHTML = '';
-        }
-
-        function setupSeasonSelector(titulo) {
-            const selector = document.getElementById('season-select');
-            const episodes = VIDEOS.filter(v => v.titulo === titulo);
-            const seasons = [...new Set(episodes.map(v => v.temporada))].sort();
+            const modal = document.getElementById('playerModal');
+            const player = document.getElementById('videoPlayer');
             
-            selector.innerHTML = seasons.map(s => `<option value="${s}">Temporada ${s}</option>`).join('');
-            updateEpisodesList();
+            player.src = '';
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
 
-        function updateEpisodesList() {
-            const selector = document.getElementById('season-select');
-            const container = document.getElementById('episodes-container');
-            const selectedSeason = parseInt(selector.value);
-            
-            const episodes = VIDEOS.filter(v => v.titulo === currentSeriesTitle && v.temporada === selectedSeason);
-            
-            container.innerHTML = episodes.map(ep => `
-                <div class="episode-item" onclick="playEpisode('${ep.url}')">
-                    <span>Episodio ${ep.episodio}</span>
-                    <span style="color: var(--text-dim)">Reproducir ahora</span>
-                </div>
-            `).join('');
-        }
-
-        function playEpisode(url) {
-            document.getElementById('video-frame-container').innerHTML = 
-                `<iframe src="${url}?autoplay=1" allow="autoplay; fullscreen"></iframe>`;
-        }
-
-        // 4. HERO SLIDER
-        function setupHero() {
-            const hero = document.getElementById('hero-slider');
-            const featured = VIDEOS.slice(0, 3);
-            
-            featured.forEach((video, index) => {
-                const slide = document.createElement('div');
-                slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
-                slide.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), transparent), url('${video.thumb}')`;
-                slide.innerHTML = `
-                    <div class="hero-content">
-                        <h1>${video.titulo}</h1>
-                        <p style="margin-bottom: 20px">${video.descripcion}</p>
-                        <button class="btn-play" onclick="openPlayer(VIDEOS[${index}])">VER AHORA</button>
-                    </div>
-                `;
-                hero.appendChild(slide);
-            });
-
-            // Rotación automática cada 5s
-            let currentSlide = 0;
-            setInterval(() => {
-                const slides = document.querySelectorAll('.hero-slide');
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }, 5000);
-        }
-
-        // 5. ASISTENTE
-        function toggleChat() {
-            const win = document.getElementById('chat-window');
-            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function chatReply(type) {
-            const content = document.getElementById('chat-content');
-            if(type === 'info') {
-                content.innerHTML = "PURP Productora es una agencia creativa líder en contenido visual cinematográfico.";
-            } else if(type === 'nav') {
-                content.innerHTML = "Puedes navegar haciendo scroll o seleccionando categorías arriba. Haz clic en cualquier póster para ver el video.";
-            } else {
-                content.innerHTML = "No necesitas registro. Todo el contenido es libre para disfrutar.";
+        // Cerrar con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePlayer();
+                closeSeriesModal();
             }
-            setTimeout(() => {
-                content.innerHTML += `<br><br><button class="chat-option" onclick="location.reload()">Reiniciar chat</button>`;
-            }, 1000);
+        });
+
+        /* =====================================================
+           CHAT ASSISTANT
+        ===================================================== */
+        function toggleChat() {
+            document.getElementById('chatWindow').classList.toggle('active');
         }
 
-        // 6. EFECTOS HEADER
-        window.onscroll = function() {
-            const header = document.getElementById('main-header');
-            if (window.pageYOffset > 50) header.classList.add('scrolled');
-            else header.classList.remove('scrolled');
-        };
+        function askAbout(topic) {
+            const messagesDiv = document.getElementById('chatMessages');
+            
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.textContent = document.querySelector(`[onclick="askAbout('${topic}')"]`).textContent;
+            messagesDiv.appendChild(userMsg);
+            
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chat-message bot';
+                botMsg.style.whiteSpace = 'pre-line';
+                botMsg.textContent = CHAT_RESPONSES[topic];
+                messagesDiv.appendChild(botMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }, 600);
+        }
 
+        /* =====================================================
+           NAVIGATION
+        ===================================================== */
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToSeries() {
+            document.getElementById('series').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        /* =====================================================
+           INICIALIZAR
+        ===================================================== */
+        renderContent();
     </script>
 </body>
 </html>
